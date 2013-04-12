@@ -12661,8 +12661,17 @@ function openpgp_keyring() {
 	 * @return {null} undefined
 	 */
 	function init() {
-		var sprivatekeys = JSON.parse(window.localStorage.getItem("privatekeys"));
-		var spublickeys = JSON.parse(window.localStorage.getItem("publickeys"));
+		var sprivatekeys = null;
+		var spublickeys = null;
+    if(chrome.storage.sync) {
+      chrome.storage.sync.get(["privatekeys","publickeys"], function(keys) {
+        sprivatekeys = JSON.parse(keys["privatekeys"]);
+        spublickeys = JSON.parse(keys["publickeys"]);
+      });
+    } else {
+      sprivatekeys = JSON.parse(window.localStorage.getItem("privatekeys"));
+      spublickeys = JSON.parse(window.localStorage.getItem("publickeys"));
+    }
 		if (sprivatekeys == null || sprivatekeys.length == 0) {
 			sprivatekeys = new Array();
 		}
