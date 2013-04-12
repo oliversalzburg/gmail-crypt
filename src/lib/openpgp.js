@@ -10282,7 +10282,7 @@ function openpgp_config() {
     if(chrome.storage.sync) {
       var openpgpInstance = this;
       chrome.storage.sync.get("config", function(result) {
-        if(!chrome.runtime.lastError) {
+        if(!chrome.runtime.lastError && result) {
           cf = JSON.parse(result["config"]);
         }
         afterRead.apply(openpgpInstance,cf);
@@ -12674,7 +12674,7 @@ function openpgp_keyring() {
     if(chrome.storage.sync) {
       var keyringInstance = this;
       chrome.storage.sync.get(["privatekeys","publickeys"], function(keys) {
-        if(!chrome.runtime.lastError) {
+        if(!chrome.runtime.lastError && keys) {
           sprivatekeys = JSON.parse(keys["privatekeys"]);
           spublickeys = JSON.parse(keys["publickeys"]);
         }
