@@ -10278,7 +10278,16 @@ function openpgp_config() {
 	 * @return [void]
 	 */
 	function read() {
-		var cf = JSON.parse(window.localStorage.getItem("config"));
+		var cf = null;
+    if(chrome.storage.sync) {
+      chrome.storage.sync.get("config", function(config) {
+        cf = JSON.parse(config);
+      });
+    } else {
+      // Read from local storage
+      cf = JSON.parse(window.localStorage.getItem("config"));
+    }
+
 		if (cf == null) {
 			this.config = this.default_config;
 			this.write();
@@ -10297,7 +10306,13 @@ function openpgp_config() {
 	 * @return [void]
 	 */
 	function write() {
-		window.localStorage.setItem("config",JSON.stringify(this.config));
+    if(chrome.storage.sync) {
+      chrome.storage.sync.set({"config": JSON.stringify(this.config)}, function() {
+        console.log('Saved option in the cloud');
+      });
+    } else {
+		  window.localStorage.setItem("config",JSON.stringify(this.config));
+    }
 	}
 
 	this.read = read;

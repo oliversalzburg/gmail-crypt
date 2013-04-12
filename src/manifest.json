@@ -10,7 +10,8 @@
     "https://mail.google.com/*",
     "http://mail.google.com/*",
     "https://google.com/*",
-    "http://google.com/*"
+    "http://google.com/*",
+    "storage"
     ],
 "background": {
     "scripts":["lib/openpgp.js", "gmail-cryptUtil.js", "gmail-cryptBackground.js"]
