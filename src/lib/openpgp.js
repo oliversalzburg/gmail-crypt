@@ -9484,8 +9484,7 @@ function openpgp_crypto_getRandomBigIntegerInRange(min, max) {
 
 //This is a test method to ensure that encryption/decryption with a given 1024bit RSAKey object functions as intended
 function openpgp_crypto_testRSA(key){
-	debugger;
-    var rsa = new RSA();
+  var rsa = new RSA();
 	var mpi = new openpgp_type_mpi();
 	mpi.create(openpgp_encoding_eme_pkcs1_encode('ABABABAB', 128));
 	var msg = rsa.encrypt(mpi.toBigInteger(),key.ee,key.n);
@@ -9552,13 +9551,14 @@ function _openpgp () {
 	 * initializes the library:
 	 * - reading the keyring from local storage
 	 * - reading the config from local storage
+   * @param {Function} callback A function to call after initialization as finished.
 	 * @return [void]
 	 */
-	function init() {
+	function init(callback) {
 		this.config = new openpgp_config();
 		this.config.read();
 		this.keyring = new openpgp_keyring();
-		this.keyring.init();
+		this.keyring.init(callback);
 	}
 	
 	/**
@@ -10280,21 +10280,28 @@ function openpgp_config() {
 	function read() {
 		var cf = null;
     if(chrome.storage.sync) {
-      chrome.storage.sync.get("config", function(config) {
-        cf = JSON.parse(config);
+      var openpgpInstance = this;
+      chrome.storage.sync.get("config", function(result) {
+        if(!chrome.runtime.lastError) {
+          cf = JSON.parse(result["config"]);
+        }
+        afterRead.apply(openpgpInstance,cf);
       });
     } else {
       // Read from local storage
       cf = JSON.parse(window.localStorage.getItem("config"));
+      afterRead(cf);
     }
-
-		if (cf == null) {
-			this.config = this.default_config;
-			this.write();
-		}
-		else
-			this.config = cf;
 	}
+
+  function afterRead(cf) {
+    if (cf == null) {
+      this.config = this.default_config;
+      this.write();
+    }
+    else
+      this.config = cf;
+  }
 
 	/**
 	 * if enabled, debug messages will be printed
@@ -10308,7 +10315,7 @@ function openpgp_config() {
 	function write() {
     if(chrome.storage.sync) {
       chrome.storage.sync.set({"config": JSON.stringify(this.config)}, function() {
-        console.log('Saved option in the cloud');
+        console.log( "Saved options in the cloud." );
       });
     } else {
 		  window.localStorage.setItem("config",JSON.stringify(this.config));
@@ -10781,7 +10788,7 @@ function openpgp_encoding_deArmor(text) {
  *         null = unknown
  */
 function getPGPMessageType(text) {
-	var splittedtext = text.split('-----');
+  var splittedtext = text.split('-----');
 	// BEGIN PGP MESSAGE, PART X/Y
 	// Used for multi-part messages, where the armor is split amongst Y
 	// parts, and this is the Xth part out of Y.
@@ -12653,50 +12660,67 @@ function openpgp_type_s2k() {
  * @classdesc The class that deals with storage of the keyring. Currently the only option is to use HTML5 local storage.
  */
 function openpgp_keyring() {
-		
+
 	/**
-	 * Initialization routine for the keyring. This method reads the 
+	 * Initialization routine for the keyring. This method reads the
 	 * keyring from HTML5 local storage and initializes this instance.
 	 * This method is called by openpgp.init().
+   * @param {Function} callback A function to call when the keyring is initialized.
 	 * @return {null} undefined
 	 */
-	function init() {
+	function init(callback) {
 		var sprivatekeys = null;
 		var spublickeys = null;
     if(chrome.storage.sync) {
+      var keyringInstance = this;
       chrome.storage.sync.get(["privatekeys","publickeys"], function(keys) {
-        sprivatekeys = JSON.parse(keys["privatekeys"]);
-        spublickeys = JSON.parse(keys["publickeys"]);
+        if(!chrome.runtime.lastError) {
+          sprivatekeys = JSON.parse(keys["privatekeys"]);
+          spublickeys = JSON.parse(keys["publickeys"]);
+        }
+        afterInit.apply(keyringInstance,[sprivatekeys,spublickeys,callback]);
       });
     } else {
       sprivatekeys = JSON.parse(window.localStorage.getItem("privatekeys"));
       spublickeys = JSON.parse(window.localStorage.getItem("publickeys"));
+      afterInit(sprivatekeys,spublickeys,callback);
     }
-		if (sprivatekeys == null || sprivatekeys.length == 0) {
-			sprivatekeys = new Array();
-		}
-
-		if (spublickeys == null || spublickeys.length == 0) {
-			spublickeys = new Array();
-		}
-		this.publicKeys = new Array();
-		this.privateKeys = new Array();
-		var k = 0;
-		for (var i =0; i < sprivatekeys.length; i++) {
-			var r = openpgp.read_privateKey(sprivatekeys[i]);
-			this.privateKeys[k] = { armored: sprivatekeys[i], obj: r[0], keyId: r[0].getKeyId()};
-			k++;
-		}
-		k = 0;
-		for (var i =0; i < spublickeys.length; i++) {
-			var r = openpgp.read_publicKey(spublickeys[i]);
-			if (r[0] != null) {
-				this.publicKeys[k] = { armored: spublickeys[i], obj: r[0], keyId: r[0].getKeyId()};
-				k++;
-			}
-		}
 	}
 	this.init = init;
+
+  function afterInit(sprivatekeys,spublickeys,callback) {
+    if (sprivatekeys == null || sprivatekeys.length == 0) {
+      sprivatekeys = new Array();
+    }
+    if(typeof sprivatekeys === "string") {
+      sprivatekeys = new Array(sprivatekeys);
+    }
+
+    if (spublickeys == null || spublickeys.length == 0) {
+      spublickeys = new Array();
+    }
+    if(typeof spublickeys === "string") {
+      spublickeys = new Array(spublickeys);
+    }
+    this.publicKeys = new Array();
+    this.privateKeys = new Array();
+    var k = 0;
+    for (var i =0; i < sprivatekeys.length; i++) {
+      var r = openpgp.read_privateKey(sprivatekeys[i]);
+      this.privateKeys[k] = { armored: sprivatekeys[i], obj: r[0], keyId: r[0].getKeyId()};
+      k++;
+    }
+    k = 0;
+    for (var i =0; i < spublickeys.length; i++) {
+      var r = openpgp.read_publicKey(spublickeys[i]);
+      if (r[0] != null) {
+        this.publicKeys[k] = { armored: spublickeys[i], obj: r[0], keyId: r[0].getKeyId()};
+        k++;
+      }
+    }
+    if(callback) callback();
+  }
+  this.afterInit = afterInit;
 
 	/**
 	 * Checks if at least one private key is in the keyring
@@ -12721,8 +12745,14 @@ function openpgp_keyring() {
 		for (var i = 0; i < this.publicKeys.length; i++) {
 			pub[i] = this.publicKeys[i].armored;
 		}
-		window.localStorage.setItem("privatekeys",JSON.stringify(priv));
-		window.localStorage.setItem("publickeys",JSON.stringify(pub));
+    if(chrome.storage.sync) {
+     chrome.storage.sync.set({"privatekeys":JSON.stringify(priv),"publickeys":JSON.stringify(pub)},function(){
+       console.log("Keys stored in the cloud");
+     });
+    } else {
+		  window.localStorage.setItem("privatekeys",JSON.stringify(priv));
+		  window.localStorage.setItem("publickeys",JSON.stringify(pub));
+    }
 	}
 	this.store = store;
 	/**

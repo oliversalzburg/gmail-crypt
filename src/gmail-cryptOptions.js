@@ -144,31 +144,32 @@
    }
    
     function onLoad(){
-        openpgp.init();
-        parsePrivateKeys();
-        parsePublicKeys();
-        loadOptions();
-        $('.linkLocal').click(linkLocalFunction).click();
-        $('#homeSpan').show();
-        $('#generateKeyPairForm').hide();
-        $('#generateKeyPairTitle').click(function() {
-            $('#generateKeyPairForm').toggle(generateKeyFormToggle);
-            generateKeyFormToggle = !generateKeyFormToggle;
-        });      
-        $('#insertPrivateKeyForm').hide();
-        $('#insertPrivateKeyTitle').click(function() {
-            $('#insertPrivateKeyForm').toggle(privateKeyFormToggle);
-            privateKeyFormToggle = !privateKeyFormToggle;
+        openpgp.init(function(){
+          parsePrivateKeys();
+          parsePublicKeys();
+          loadOptions();
+          $('.linkLocal').click(linkLocalFunction).click();
+          $('#homeSpan').show();
+          $('#generateKeyPairForm').hide();
+          $('#generateKeyPairTitle').click(function() {
+              $('#generateKeyPairForm').toggle(generateKeyFormToggle);
+              generateKeyFormToggle = !generateKeyFormToggle;
+          });
+          $('#insertPrivateKeyForm').hide();
+          $('#insertPrivateKeyTitle').click(function() {
+              $('#insertPrivateKeyForm').toggle(privateKeyFormToggle);
+              privateKeyFormToggle = !privateKeyFormToggle;
+          });
+          $('#insertPublicKeyForm').hide();
+          $('#insertPublicKeyTitle').click(function() {
+              $('#insertPublicKeyForm').toggle(publicKeyFormToggle);
+              publicKeyFormToggle = !publicKeyFormToggle;
+          });
+          $('#optionsFormSubmit').click(saveOptions);
+          $('#insertPrivateKeyFormSubmit').click(insertPrivateKey);
+          $('#generateKeyPairFormSubmit').click(generateKeyPair);
+          $('#insertPublicKeyFormSubmit').click(insertPublicKey);
         });
-        $('#insertPublicKeyForm').hide();
-        $('#insertPublicKeyTitle').click(function() {
-            $('#insertPublicKeyForm').toggle(publicKeyFormToggle);
-            publicKeyFormToggle = !publicKeyFormToggle;
-        });
-        $('#optionsFormSubmit').click(saveOptions);
-        $('#insertPrivateKeyFormSubmit').click(insertPrivateKey);
-        $('#generateKeyPairFormSubmit').click(generateKeyPair);
-        $('#insertPublicKeyFormSubmit').click(insertPublicKey);
       }
 
    $(document).ready(onLoad());
