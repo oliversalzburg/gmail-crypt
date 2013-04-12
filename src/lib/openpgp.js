@@ -9556,9 +9556,11 @@ function _openpgp () {
 	 */
 	function init(callback) {
 		this.config = new openpgp_config();
-		this.config.read();
-		this.keyring = new openpgp_keyring();
-		this.keyring.init(callback);
+		var openpgpInstance = this;
+		this.config.read(function(){
+			openpgpInstance.keyring = new openpgp_keyring();
+			openpgpInstance.keyring.init(callback);
+		});
 	}
 	
 	/**
@@ -10277,30 +10279,33 @@ function openpgp_config() {
 	 * if config is null the default config will be used
 	 * @return [void]
 	 */
-	function read() {
+	function read(callback) {
 		var cf = null;
-    if(chrome.storage.sync) {
-      var openpgpInstance = this;
-      chrome.storage.sync.get("config", function(result) {
-        if(!chrome.runtime.lastError && result) {
-          if(result["config"]) cf = JSON.parse(result["config"]);
-        }
-        afterRead.apply(openpgpInstance,cf);
-      });
-    } else {
-      // Read from local storage
-      cf = JSON.parse(window.localStorage.getItem("config"));
-      afterRead(cf);
-    }
+		debugger;
+		if(chrome.storage.sync) {
+		  var openpgpInstance = this;
+		  chrome.storage.sync.get("config", function(result) {
+			if(!chrome.runtime.lastError && result) {
+			  if(result["config"]) cf = JSON.parse(result["config"]);
+			}
+			afterRead.apply(openpgpInstance,[cf,callback]);
+		  });
+		} else {
+		  // Read from local storage
+		  cf = JSON.parse(window.localStorage.getItem("config"));
+		  afterRead(cf,callback);
+		}
 	}
 
-  function afterRead(cf) {
+  function afterRead(cf,callback) {
     if (cf == null) {
       this.config = this.default_config;
       this.write();
     }
     else
       this.config = cf;
+
+		if(callback) callback();
   }
 
 	/**

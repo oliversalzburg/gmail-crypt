@@ -70,6 +70,7 @@
    }
    
    function parsePrivateKeys(){
+		 debugger;
       var keys = openpgp.keyring.privateKeys;
       $('#privateKeyTable>tbody>tr').remove();
       for(var k=0;k<keys.length;k++){
@@ -120,6 +121,7 @@
    }
    
    function loadOptions(){
+		debugger;
         var gCryptSettings = openpgp.config.config.gCrypt;
         if (gCryptSettings && gCryptSettings.stopAutomaticDrafts){
             $('#stopAutomaticDrafts').attr('checked', true);
@@ -145,30 +147,30 @@
    
     function onLoad(){
         openpgp.init(function(){
-          parsePrivateKeys();
-          parsePublicKeys();
-          loadOptions();
-          $('.linkLocal').click(linkLocalFunction).click();
-          $('#homeSpan').show();
-          $('#generateKeyPairForm').hide();
-          $('#generateKeyPairTitle').click(function() {
-              $('#generateKeyPairForm').toggle(generateKeyFormToggle);
-              generateKeyFormToggle = !generateKeyFormToggle;
-          });
-          $('#insertPrivateKeyForm').hide();
-          $('#insertPrivateKeyTitle').click(function() {
-              $('#insertPrivateKeyForm').toggle(privateKeyFormToggle);
-              privateKeyFormToggle = !privateKeyFormToggle;
-          });
-          $('#insertPublicKeyForm').hide();
-          $('#insertPublicKeyTitle').click(function() {
-              $('#insertPublicKeyForm').toggle(publicKeyFormToggle);
-              publicKeyFormToggle = !publicKeyFormToggle;
-          });
-          $('#optionsFormSubmit').click(saveOptions);
-          $('#insertPrivateKeyFormSubmit').click(insertPrivateKey);
-          $('#generateKeyPairFormSubmit').click(generateKeyPair);
-          $('#insertPublicKeyFormSubmit').click(insertPublicKey);
+			parsePrivateKeys();
+			parsePublicKeys();
+			loadOptions();
+			$('.linkLocal').click(linkLocalFunction).click();
+			$('#homeSpan').show();
+			$('#generateKeyPairForm').hide();
+			$('#generateKeyPairTitle').click(function() {
+				$('#generateKeyPairForm').toggle(generateKeyFormToggle);
+				generateKeyFormToggle = !generateKeyFormToggle;
+			});
+			$('#insertPrivateKeyForm').hide();
+			$('#insertPrivateKeyTitle').click(function() {
+				$('#insertPrivateKeyForm').toggle(privateKeyFormToggle);
+				privateKeyFormToggle = !privateKeyFormToggle;
+			});
+			$('#insertPublicKeyForm').hide();
+			$('#insertPublicKeyTitle').click(function() {
+				$('#insertPublicKeyForm').toggle(publicKeyFormToggle);
+				publicKeyFormToggle = !publicKeyFormToggle;
+			});
+			$('#optionsFormSubmit').click(saveOptions);
+			$('#insertPrivateKeyFormSubmit').click(insertPrivateKey);
+			$('#generateKeyPairFormSubmit').click(generateKeyPair);
+			$('#insertPublicKeyFormSubmit').click(insertPublicKey);
         });
       }
 

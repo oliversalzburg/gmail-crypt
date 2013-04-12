@@ -41,14 +41,15 @@ chrome.extension.onRequest.addListener(function(request,sender,sendResponse){
         sendResponse(openpgp.keyring.privateKeys);
     }
     if(request.method == "getOption"){
-        openpgp.config.read();
+        openpgp.config.read(function(){
         var gCryptSettings = openpgp.config.config.gCrypt;
-        if(!gCryptSettings){
-            sendResponse('');
-        }
-        else{
-            sendResponse(gCryptSettings[request.option]);
-        }
+					if(!gCryptSettings){
+							sendResponse('');
+					}
+					else{
+							sendResponse(gCryptSettings[request.option]);
+					}
+				});
     }
     if(request.method == "getConfig"){
         sendResponse(openpgp.config);
